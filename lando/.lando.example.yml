@@ -1,0 +1,62 @@
+# Replace all project with project name
+name: lara-upwork-search
+recipe: laravel
+config:
+  php: '8.2'
+  composer_version: '2' # set to 1 | 1-latest | 2 | 2-latest https://docs.lando.dev/config/php.html#installing-composer
+  via: apache # Nginx or apache
+  webroot: ./public/public
+  database: mysql # Mariadb or mysql
+  xdebug: true
+  config:
+    # https://github.com/lando/lando/blob/master/plugins/lando-services/services/php/php.ini
+    php: config/php.ini
+    # Config/httpd.conf for apache or nginx.conf for nginx
+    # https://github.com/lando/lando/blob/master/plugins/lando-services/services/nginx/nginx.conf
+    server: config/nginx.conf
+    # Comment out if using apache
+    params: config/params
+services:
+  node:
+    type: node:20
+    scanner: false
+    ports:
+      - "3009:3009"
+    build:
+      - "npm install"
+    globals:
+      gulp-cli: latest
+  mailhog:
+    type: mailhog
+    hogfrom:
+      - appserver
+  pma:
+    type: phpmyadmin
+    hosts:
+      - database
+tooling:
+  npm:
+    service: node
+  node:
+    service: node
+  gulp:
+    service: node
+  yarn:
+    service: node
+  php:
+    service: appserver
+  dev:
+    service: node
+    cmd: npm run dev
+  build:
+    service: node
+    cmd: npm run build
+proxy:
+  # Appserver_nginx or appserver for apache
+  appserver:
+    - lara-upwork-search.lndo.site
+    - upwork-search.local
+  mailhog:
+    - mail.lara-upwork-search.lndo.site
+  pma:
+    - pma.lara-upwork-search.lndo.site
